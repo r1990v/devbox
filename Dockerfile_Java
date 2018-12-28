@@ -1,0 +1,62 @@
+from ubuntu:18.04
+
+run apt-get update -y
+run apt-get install -y openssh-server
+run apt-get install -y curl
+run apt-get install -y vim
+run apt-get install software-properties-common -y
+run add-apt-repository ppa:webupd8team/java
+run apt-get update -y
+run echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
+    apt-get install -y oracle-java8-installer && \
+    apt-get clean
+run apt install man -y
+run apt-get install -y build-essential
+run apt-get -y install sudo
+# Setup home environment
+
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' |chpasswd
+RUN sed -ri 's/^#?PermitRootLogin\s+.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+RUN mkdir /root/.ssh
+RUN apt-get clean && \
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+#run useradd dev
+#run mkdir /home/dev && chown -R dev: /home/dev
+#run mkdir -p /home/dev/go /home/dev/bin /home/dev/lib /home/dev/include
+#env PATH /home/dev/bin:$PATH
+#env PKG_CONFIG_PATH /home/dev/lib/pkgconfig
+#env LD_LIBRARY_PATH /home/dev/lib
+
+
+# Create a shared data volume
+# We need to create an empty file, otherwise the volume will
+# belong to root.
+# This is probably a Docker bug.
+#run mkdir /var/shared/
+#run touch /var/shared/placeholder
+#run chown -R dev:dev /var/shared
+#volume /var/shared
+
+#workdir /home/dev
+#env HOME /home/dev
+#add vimrc /home/dev/.vimrc
+#add vim /home/dev/.vim
+#add bash_profile /home/dev/.bash_profile
+#add gitconfig /home/dev/.gitconfig
+
+# Link in shared parts of the home directory
+#run ln -s /var/shared/.ssh
+#run ln -s /var/shared/.bash_history
+#run ln -s /var/shared/.maintainercfg
+
+#run chown -R dev: /home/dev
+#user dev
+
+#run sudo -i
+
+EXPOSE 22
+
+CMD ["/usr/sbin/sshd", "-D"]
